@@ -1,7 +1,7 @@
 {
-   "name": "neoxr-bot",
+   "name": "mr-stanley-bot",
    "version": "4.0",
-   "description": "WhatsApp Bot (Base)",
+   "description": "Mr Stanley WhatsApp Bot (Base)",
    "main": "index.js",
    "engines": {
       "node": ">= 20.x"
@@ -11,18 +11,18 @@
    },
    "repository": {
       "type": "git",
-      "url": "git+https://github.com/neoxr/neoxr-bot.git"
+      "url": "git+https://github.com/shizzyandy/neoxr-bot.git"
    },
    "keywords": [
       "wb",
       "bot"
    ],
-   "author": "Wildan Izzudin",
+   "author": "Mr Stanley",
    "license": "ISC",
    "bugs": {
-      "url": "https://github.com/neoxr/neoxr-bot/issues"
+      "url": "https://github.com/shizzyandy/neoxr-bot/issues"
    },
-   "homepage": "https://github.com/neoxr/neoxr-bot#readme",
+   "homepage": "https://github.com/shizzyandy/neoxr-bot#readme",
    "dependencies": {
       "@adiwajshing/baileys": "npm:@neoxr/baileys@8.2.16",
       "@adiwajshing/keyed-db": "^0.2.4",

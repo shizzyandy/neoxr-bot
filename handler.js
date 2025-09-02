@@ -231,7 +231,7 @@ module.exports = async (client, ctx) => {
    } catch (e) {
       if (/(undefined|overlimit|timed|timeout|users|item|time)/ig.test(e.message)) return
       console.log(e)
-      if (!m.fromMe) return m.reply(Func.jsonFormat(new Error('neoxr-bot encountered an error :' + e)))
+      if (!m.fromMe) return m.reply(Func.jsonFormat(new Error('mr-stanley-bot encountered an error :' + e)))
    }
    Func.reload(require.resolve(__filename))
 }
