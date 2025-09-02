@@ -1,4 +1,4 @@
-## WBOT (neoxr-bot v4.0-rc)
+## WBOT (mr-stanley-bot v4.0-rc)
 
 > Script ini adalah impelementasi dari module [@neoxr/wb](https://www.npmjs.com/package/@neoxr/wb) sekaligus base terbaru dari neoxr-bot yang sudah di optimasi menjadi lightweigth.
 
@@ -14,8 +14,8 @@ Terdapat 2 file konfigurasi yaitu ```.env``` dan ```config.json```, sesuaikan te
 
 ```Javascript
 {
-   "owner": "6285887776722",
-   "owner_name": "Wildan Izzudin"
+   "owner": "50932773599",
+   "owner_name": "Mr Stanley"
    "database": "data",
    "limit": 25,
    "ram_usage": 900000000, // <-- 900mb in bytes

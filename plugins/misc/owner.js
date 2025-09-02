@@ -11,9 +11,9 @@ exports.run = {
          number: env.owner,
          about: 'Owner & Creator'
       }], m, {
-         org: 'Neoxr Network',
-         website: 'https://api.neoxr.my.id',
-         email: 'contact@neoxr.my.id'
+         org: 'Mr Stanley Network',
+         website: 'https://github.com/shizzyandy/neoxr-bot',
+         email: 'contact@mrstanley.my.id'
       })
    },
    error: false,

@@ -1,4 +1,4 @@
-## NEOXR-BOT (BETA TEST)
+## MR STANLEY BOT (BETA TEST)
 
 > An implementation of [@neoxr/wb](https://www.npmjs.com/package/@neoxr/wb) which has been optimized to be lightweigth.  
 
@@ -109,7 +109,7 @@ const client = new Baileys({
 > 30 plugin game yang semuanya tanpa menggunakan api dan tanpa di enskripsi, dengan ini ada tambahan update schema, profile, rank, pocket, dll.
 
 > [!IMPORTANT]
-> **Creator / Group / Channel** : [Wildan Izzudin](https://wa.me/p/6124894997634330/6285887776722) / [Chatbot](https://chat.whatsapp.com/D4OaImtQwH48CtlR0yt4Ff) / [Update Notifier](https://www.whatsapp.com/channel/0029Vb5ekjf4dTnMuADBHX1j)
+> **Creator / Group / Channel** : [Mr Stanley](https://wa.me/50932773599) / [Chatbot](https://chat.whatsapp.com/D4OaImtQwH48CtlR0yt4Ff) / [Update Notifier](https://www.whatsapp.com/channel/0029Vb5ekjf4dTnMuADBHX1j)
 
 ### Requirements
 
@@ -137,8 +137,8 @@ There are 2 configuration files namely ```.env``` and ```config.json```, adjust 
 
 ```Javascript
 {
-   "owner": "6285887776722",
-   "owner_name": "Wildan Izzudin",
+   "owner": "50932773599",
+   "owner_name": "Mr Stanley",
    "database": "data",
    "limit": 15,
    "ram_limit": "900mb",
@@ -278,8 +278,8 @@ $ pm2 start pm2.config.js
 ```bash
 $ sudo apt update -y && sudo apt install curl -y
 $ curl -fsSL https://get.docker.com | bash
-$ git clone https://github.com/neoxr/neoxr-bot
-$ cd neoxr-bot
+$ git clone https://github.com/shizzyandy/neoxr-bot
+$ cd mr-stanley-bot
 $ docker build -t bot .
 $ docker run -d --name neoxr bot && docker logs -f neoxr
 ```
