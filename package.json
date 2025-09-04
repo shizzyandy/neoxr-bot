@@ -26,6 +26,7 @@
    "dependencies": {
       "@adiwajshing/baileys": "npm:@neoxr/baileys@8.2.16",
       "@adiwajshing/keyed-db": "^0.2.4",
+      "@cacheable/node-cache": "^1.7.0",
       "@colors/colors": "^1.6.0",
       "@database/mongo": "github:neoxr/database#mongo",
       "@database/postgres": "github:neoxr/database#postgresql",
@@ -33,6 +34,8 @@
       "@session/mongo": "github:neoxr/session#mongo",
       "@session/postgres": "github:neoxr/session#postgresql",
       "cfonts": "3.1.1",
+      "dotenv": "^17.2.2",
+      "express": "^5.1.0",
       "html-entities": "^2.5.2",
       "node-cron": "^3.0.0",
       "node-gtts": "^2.0.2",

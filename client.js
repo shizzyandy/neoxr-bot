@@ -40,7 +40,8 @@ const connect = async () => {
          },
          presence: true, // 'true' if you want to see the bot typing or recording
          code: '', // Custom pairing code 8 chars (e.g: NEOXRBOT)
-         version: [2, 3000, 1023223821] // To see the latest version : https://wppconnect.io/whatsapp-versions/
+         version: [2, 3000, 1023223821], // To see the latest version : https://wppconnect.io/whatsapp-versions/
+         server: global.env?.bot_hosting?.server || false
       }, {
          browser: ['Ubuntu', 'Firefox', '20.0.00'],
          shouldIgnoreJid: jid => {
@@ -51,7 +52,7 @@ const connect = async () => {
       /* starting to connect */
       client.once('connect', async res => {
          /* load database */
-         global.db = { users: [], chats: [], groups: [], statistic: {}, sticker: {}, setting: {}, ...(await database.fetch() || {}) }
+         global.db = { users: [], chats: [], groups: [], statistic: {}, sticker: {}, setting: {}, bots: [], ...(await database.fetch() || {}) }
          /* save database */
          await database.save(global.db)
          /* write connection log */
@@ -101,6 +102,76 @@ const connect = async () => {
                await client.sock.sendFile(env.owner + '@s.whatsapp.net', fs.readFileSync('./' + env.database + '.json'), env.database + '.json', '', null)
             }
          })
+
+         /* create sessions directory if doesn't exist */
+         if (!fs.existsSync('./sessions')) fs.mkdirSync('./sessions')
+
+         /* automatically enable web server for multi-user functionality */
+         if (global.env?.bot_hosting?.server) {
+            try {
+               const express = require('express')
+               const path = require('path')
+               
+               // Create express app
+               const app = express()
+               app.use(express.json())
+               app.use(express.static('public'))
+               
+               // Store client reference for API routes
+               app.locals.client = client.sock
+               
+               // Load API routes
+               const fs = require('fs')
+               const routersPath = path.join(__dirname, 'routers')
+               const apiPath = path.join(routersPath, 'api')
+               
+               // Load main route
+               if (fs.existsSync(path.join(routersPath, 'index.js'))) {
+                  const indexRoute = require('./routers/index.js')
+                  app[indexRoute.routes.method](indexRoute.routes.path, indexRoute.routes.execution)
+               }
+               
+               // Load API routes
+               if (fs.existsSync(apiPath)) {
+                  const apiFiles = fs.readdirSync(apiPath).filter(file => file.endsWith('.js'))
+                  for (const file of apiFiles) {
+                     const route = require(path.join(apiPath, file))
+                     if (route.routes) {
+                        app[route.routes.method](route.routes.path, route.routes.execution)
+                     }
+                  }
+               }
+               
+               // Start server
+               const port = global.env.bot_hosting.port
+               app.listen(port, global.env.bot_hosting.host, () => {
+                  console.log(colors.green(`🌐 Web server started on http://${global.env.bot_hosting.host}:${port}`))
+                  console.log(colors.cyan(`📱 Visit http://localhost:${port} to create WhatsApp bots`))
+               })
+               
+            } catch (e) {
+               console.log(colors.red('Failed to start web server:', e.message))
+               // Install express if not available
+               if (e.code === 'MODULE_NOT_FOUND' && e.message.includes('express')) {
+                  console.log(colors.yellow('Installing express...'))
+                  require('child_process').execSync('npm install express', { stdio: 'inherit' })
+               }
+            }
+         }
+
+         /* auto-reconnect existing bots */
+         if (global.db?.bots && Array.isArray(global.db.bots) && global.db.bots.length > 0) {
+            const validBots = global.db.bots.filter(v => v.jid && !v.is_connected)
+            console.log(colors.yellow(`🔄 Found ${validBots.length} bots to reconnect...`))
+            
+            for (let bot of validBots) {
+               try {
+                  await require('./lib/connector/connector')(bot.jid, client, session, database)
+               } catch (e) {
+                  console.log(colors.red('Reconnection failed for:', bot.jid, e.message))
+               }
+            }
+         }
       })
 
       /* print all message object */
