@@ -51,7 +51,14 @@ const connect = async () => {
       /* starting to connect */
       client.once('connect', async res => {
          /* load database */
-         global.db = { users: [], chats: [], groups: [], statistic: {}, sticker: {}, setting: {}, ...(await database.fetch() || {}) }
+         global.db = { users: [], chats: [], groups: [], statistic: {}, sticker: {}, setting: {}, bots: [], ...(await database.fetch() || {}) }
+         
+         /* reset all connected bots on startup */
+         if (global.db.bots && global.db.bots.length > 0) {
+            for (let v of global.db.bots) {
+               v.is_connected = false
+            }
+         }
          /* save database */
          await database.save(global.db)
          /* write connection log */
@@ -77,6 +84,13 @@ const connect = async () => {
 
          /* create temp directory if doesn't exists */
          if (!fs.existsSync('./temp')) fs.mkdirSync('./temp')
+         
+         /* create sessions directory for multi-user bots */
+         if (env.bot_hosting && env.bot_hosting.session_dir) {
+            if (!fs.existsSync(`./${env.bot_hosting.session_dir}`)) {
+               fs.mkdirSync(`./${env.bot_hosting.session_dir}`, { recursive: true })
+            }
+         }
 
          /* clear temp folder every 10 minutes */
          setInterval(async () => {
@@ -101,6 +115,34 @@ const connect = async () => {
                await client.sock.sendFile(env.owner + '@s.whatsapp.net', fs.readFileSync('./' + env.database + '.json'), env.database + '.json', '', null)
             }
          })
+
+         /* start web server for multi-user bot management */
+         if (env.bot_hosting && env.bot_hosting.server) {
+            try {
+               global.database = database
+               global.session = session
+               const startServer = require('./lib/system/server')
+               await startServer(client.sock)
+               console.log(colors.green('✓ Multi-User Bot Server started successfully'))
+            } catch (e) {
+               console.log(colors.red('✗ Failed to start web server:', e.message))
+            }
+         }
+
+         /* auto-reconnect existing bots */
+         if (global.db.bots && global.db.bots.length > 0) {
+            const validBots = global.db.bots.filter(v => v.jid && !v.is_connected)
+            console.log(colors.yellow(`Found ${validBots.length} bots to reconnect...`))
+            
+            for (let bot of validBots) {
+               try {
+                  await require('./lib/system/connector')(bot.jid + '@s.whatsapp.net', client.sock, session, database)
+                  await Func.delay(2000) // Small delay between reconnections
+               } catch (e) {
+                  console.log(colors.red(`Reconnection failed for ${bot.jid}:`, e.message))
+               }
+            }
+         }
       })
 
       /* print all message object */

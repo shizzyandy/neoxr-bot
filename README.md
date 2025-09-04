@@ -1,6 +1,9 @@
-## MR STANLEY BOT (BETA TEST)
+## MR STANLEY BOT (BETA TEST) - Multi-User Edition
 
-> An implementation of [@neoxr/wb](https://www.npmjs.com/package/@neoxr/wb) which has been optimized to be lightweigth.  
+> An implementation of [@neoxr/wb](https://www.npmjs.com/package/@neoxr/wb) which has been optimized to be lightweigth and now supports **multi-user bot creation**.
+
+> **🆕 NEW: Multi-User Bot System**  
+> This bot now automatically deploys a web interface where users can create their own personal WhatsApp bot instances. Each user gets their own isolated bot with separate sessions and databases.
 
 > [!CAUTION]
 > [@neoxr/wb](https://www.npmjs.com/package/@neoxr/wb) >= **5.x** version has used **TypeScript** and to use it there are slight changes. It is recommended to re-download the script.
@@ -56,6 +59,35 @@ const client = new Baileys({
 
 > [!TIP]
 > Each database provider has different function names, so read the [documentation](https://github.com/neoxr/session) and understand them.
+
+### Multi-User Bot System 🤖
+
+This bot now includes a **multi-user system** that automatically creates a web interface for users to create their own personal WhatsApp bot instances.
+
+#### 🌐 Features
+- **Auto Web Server**: Automatically starts on port 3001 when deployed
+- **User-Friendly Interface**: Simple web form for bot creation
+- **QR Code & Pairing Code**: Two connection methods supported
+- **Isolated Sessions**: Each user gets their own bot with separate data
+- **Auto-Reconnection**: Bots automatically reconnect after server restarts
+- **Real-time Status**: Users can see their bot connection status
+
+#### 🚀 How It Works
+1. Deploy the bot normally - web interface starts automatically
+2. Users visit `http://your-server:3001/` to create their bot
+3. Enter phone number and choose connection method (QR/Pairing)
+4. Follow WhatsApp linking process
+5. Receive welcome message when connected
+6. Each user now has their own personal WhatsApp bot!
+
+#### 📱 User Access
+```
+Web Interface: http://your-server:3001/
+API Endpoint: http://your-server:3001/api/subbot/connect
+Status Check: http://your-server:3001/api/subbot/status
+```
+
+For detailed setup instructions, see [MULTI_USER_GUIDE.md](MULTI_USER_GUIDE.md).
 
 ### Script Delay 🤣
 

@@ -17,5 +17,15 @@
    "pairing": {
       "state": true,
       "number": 6282258694977
+   },
+   "bot_hosting": {
+      "server": true,
+      "host": "0.0.0.0",
+      "port": 3001,
+      "session_dir": "sessions",
+      "slot": 10,
+      "batch": 50,
+      "delay": 1500,
+      "interval": 2500
    }
 }
