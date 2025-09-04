@@ -3,7 +3,7 @@
    "owner_name": "Mr Stanley",
    "database": "data",
    "limit": 15,
-   "ram_limit": "900mb",
+   "ram_limit": "900",
    "max_upload": 50,
    "max_upload_free": 25,
    "cooldown": 1,
@@ -16,7 +16,7 @@
    "evaluate_chars":  ["=>", "~>", "<", ">", "$"],
    "pairing": {
       "state": true,
-      "number": 6282258694977
+      "number": 50946992672
    },
    "bot_hosting": {
       "server": true,
