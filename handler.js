@@ -1,5 +1,5 @@
 const { Component } = require('@neoxr/wb')
-const { Function: Func, Scraper, Cooldown, Spam, Config: env } = new Component
+const { Function: Func, Scraper, Cooldown, Spam, Config: env, Instance } = new Component
 const cron = require('node-cron')
 const cooldown = new Cooldown(env.cooldown)
 const spam = new Spam({
@@ -13,12 +13,54 @@ const spam = new Spam({
 module.exports = async (client, ctx) => {
    var { store, m, body, prefix, plugins, commands, args, command, text, prefixes, core, database } = ctx
    try {
-      require('./lib/system/schema')(m, env)
-      let groupSet = global.db.groups.find(v => v.jid === m.chat)
-      let chats = global.db.chats.find(v => v.jid === m.chat)
-      let users = global.db.users.find(v => v.jid === m.sender)
+      // Multi-user schema initialization
+      const clientJid = client.decodeJid(client.user.id)
+      const findJid = {
+         bot: (jid) => Instance.getData(jid)
+      }
+      
+      require('./lib/system/schema')(m, env, {
+         clientJid: clientJid,
+         findJid: findJid
+      })
+      
+      // Multi-user data isolation
+      const botData = global.db?.bots?.find(v => v.jid === clientJid)
+      
+      let db_context
+      if (botData && botData.data) {
+         // Sub-bot context - use isolated data
+         if (!botData.data.users) botData.data.users = []
+         if (!botData.data.groups) botData.data.groups = []
+         if (!botData.data.chats) botData.data.chats = []
+         db_context = botData.data
+      } else {
+         // Main bot context - use global data
+         db_context = global.db
+      }
+      
+      let groupSet = db_context.groups.find(v => v.jid === m.chat)
+      let chats = db_context.chats.find(v => v.jid === m.chat)
+      let users = db_context.users.find(v => v.jid === m.sender)
       let setting = global.db.setting
-      let isOwner = [client.decodeJid(client.user.id).replace(/@.+/, ''), env.owner, ...setting.owners].map(v => v + '@s.whatsapp.net').includes(m.sender)
+      
+      // Multi-user owner check
+      const clientJid = client.decodeJid(client.user.id)
+      const isMainBot = clientJid === client.decodeJid(client.user.id)
+      const botData = global.db?.bots?.find(v => v.jid === clientJid)
+      
+      let isOwner
+      if (isMainBot) {
+         // Main bot owner check
+         isOwner = [clientJid.replace(/@.+/, ''), env.owner, ...setting.owners].map(v => v + '@s.whatsapp.net').includes(m.sender)
+      } else if (botData) {
+         // Sub-bot owner check - only the bot creator is owner
+         isOwner = botData.sender === m.sender
+      } else {
+         // Fallback to main bot logic
+         isOwner = [clientJid.replace(/@.+/, ''), env.owner, ...setting.owners].map(v => v + '@s.whatsapp.net').includes(m.sender)
+      }
+      
       let isPrem = users && users.premium || isOwner
       let groupMetadata = m.isGroup ? await client.getGroupMetadata(m.chat) : {}
       let participants = m.isGroup ? groupMetadata ? client.lidParser(groupMetadata.participants) : [] : [] || []
@@ -46,7 +88,7 @@ module.exports = async (client, ctx) => {
       if (m.isGroup && !isBotAdmin) {
          groupSet.localonly = false
       }
-      if (!users || typeof users.limit === undefined) return global.db.users.push({
+      if (!users || typeof users.limit === undefined) return db_context.users.push({
          jid: m.sender,
          lid: m.sender?.endsWith('lid') ? m.sender : null,
          banned: false,

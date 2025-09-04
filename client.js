@@ -2,7 +2,7 @@
 // process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0'
 require('./error'), require('events').EventEmitter.defaultMaxListeners = 500
 const { Component } = require('@neoxr/wb')
-const { Baileys, Function: Func, Config: env, Server: server } = new Component
+const { Baileys, Function: Func, Config: env } = new Component
 require('./lib/system/functions'), require('./lib/system/scraper'), require('./lib/system/config')
 const cron = require('node-cron')
 const fs = require('fs')
@@ -108,13 +108,53 @@ const connect = async () => {
 
          /* automatically enable web server for multi-user functionality */
          if (global.env?.bot_hosting?.server) {
-            const isOn = await Func.isPortInUse(global.env.bot_hosting.port)
-            if (!isOn) {
-               try {
-                  await server(client.sock)
-                  console.log(colors.green(`🌐 Web server started on http://${global.env.bot_hosting.host}:${global.env.bot_hosting.port}`))
-               } catch (e) {
-                  console.log(colors.red('Failed to start web server:', e.message))
+            try {
+               const express = require('express')
+               const path = require('path')
+               
+               // Create express app
+               const app = express()
+               app.use(express.json())
+               app.use(express.static('public'))
+               
+               // Store client reference for API routes
+               app.locals.client = client.sock
+               
+               // Load API routes
+               const fs = require('fs')
+               const routersPath = path.join(__dirname, 'routers')
+               const apiPath = path.join(routersPath, 'api')
+               
+               // Load main route
+               if (fs.existsSync(path.join(routersPath, 'index.js'))) {
+                  const indexRoute = require('./routers/index.js')
+                  app[indexRoute.routes.method](indexRoute.routes.path, indexRoute.routes.execution)
+               }
+               
+               // Load API routes
+               if (fs.existsSync(apiPath)) {
+                  const apiFiles = fs.readdirSync(apiPath).filter(file => file.endsWith('.js'))
+                  for (const file of apiFiles) {
+                     const route = require(path.join(apiPath, file))
+                     if (route.routes) {
+                        app[route.routes.method](route.routes.path, route.routes.execution)
+                     }
+                  }
+               }
+               
+               // Start server
+               const port = global.env.bot_hosting.port
+               app.listen(port, global.env.bot_hosting.host, () => {
+                  console.log(colors.green(`🌐 Web server started on http://${global.env.bot_hosting.host}:${port}`))
+                  console.log(colors.cyan(`📱 Visit http://localhost:${port} to create WhatsApp bots`))
+               })
+               
+            } catch (e) {
+               console.log(colors.red('Failed to start web server:', e.message))
+               // Install express if not available
+               if (e.code === 'MODULE_NOT_FOUND' && e.message.includes('express')) {
+                  console.log(colors.yellow('Installing express...'))
+                  require('child_process').execSync('npm install express', { stdio: 'inherit' })
                }
             }
          }
