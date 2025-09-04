@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-User WhatsApp Bot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .method-selection {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .method-option {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .method-option:hover {
+            border-color: #667eea;
+        }
+        
+        .method-option.selected {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .method-option h3 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .method-option p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .create-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .create-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .create-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .result.success {
+            background: #f0f9ff;
+            border: 2px solid #3b82f6;
+        }
+        
+        .result.error {
+            background: #fef2f2;
+            border: 2px solid #ef4444;
+        }
+        
+        .qr-code {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .qr-code img {
+            max-width: 250px;
+            height: auto;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+        }
+        
+        .pair-code {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .pair-code .code {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+            letter-spacing: 5px;
+            padding: 20px;
+            background: #f8f9ff;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+        
+        .instructions {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Create Your WhatsApp Bot</h1>
+            <p>Get your own personal WhatsApp bot in seconds</p>
+        </div>
+        
+        <form id="botForm">
+            <div class="form-group">
+                <label for="phoneNumber">WhatsApp Phone Number</label>
+                <input type="tel" id="phoneNumber" placeholder="e.g., 628123456789" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="botName">Bot Name</label>
+                <input type="text" id="botName" placeholder="e.g., My Personal Bot" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Connection Method</label>
+                <div class="method-selection">
+                    <div class="method-option selected" data-method="qr">
+                        <h3>📱 QR Code</h3>
+                        <p>Scan with your phone</p>
+                    </div>
+                    <div class="method-option" data-method="pair">
+                        <h3>🔢 Pairing Code</h3>
+                        <p>Enter code manually</p>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" class="create-btn">
+                <span class="btn-text">Create My Bot</span>
+                <span class="loading" style="display: none;"></span>
+            </button>
+        </form>
+        
+        <div id="result" class="result">
+            <div id="resultContent"></div>
+        </div>
+    </div>
+    
+    <script>
+        let selectedMethod = 'qr';
+        
+        // Handle method selection
+        document.querySelectorAll('.method-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.method-option').forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                selectedMethod = option.dataset.method;
+            });
+        });
+        
+        // Handle form submission
+        document.getElementById('botForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            const botName = document.getElementById('botName').value;
+            const button = document.querySelector('.create-btn');
+            const btnText = document.querySelector('.btn-text');
+            const loading = document.querySelector('.loading');
+            const result = document.getElementById('result');
+            const resultContent = document.getElementById('resultContent');
+            
+            // Show loading state
+            button.disabled = true;
+            btnText.style.display = 'none';
+            loading.style.display = 'inline-block';
+            result.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/subbot/connect', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        phoneNumber: phoneNumber,
+                        botName: botName,
+                        method: selectedMethod
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status) {
+                    result.className = 'result success';
+                    result.style.display = 'block';
+                    
+                    if (selectedMethod === 'qr') {
+                        resultContent.innerHTML = `
+                            <h3>✅ Bot Creation Started!</h3>
+                            <div class="qr-code">
+                                <img src="${data.data.qrCode}" alt="QR Code">
+                            </div>
+                            <div class="instructions">
+                                <p><strong>Instructions:</strong></p>
+                                <ol>
+                                    <li>Open WhatsApp on your phone</li>
+                                    <li>Go to Settings → Linked Devices</li>
+                                    <li>Tap "Link a Device"</li>
+                                    <li>Scan the QR code above</li>
+                                </ol>
+                                <p>The QR code expires in ${data.data.expiresIn} seconds.</p>
+                            </div>
+                        `;
+                    } else {
+                        resultContent.innerHTML = `
+                            <h3>✅ Bot Creation Started!</h3>
+                            <div class="pair-code">
+                                <p><strong>Your Pairing Code:</strong></p>
+                                <div class="code">${data.data.pairCode}</div>
+                            </div>
+                            <div class="instructions">
+                                <p><strong>Instructions:</strong></p>
+                                <ol>
+                                    <li>Open WhatsApp on your phone</li>
+                                    <li>Go to Settings → Linked Devices</li>
+                                    <li>Tap "Link a Device"</li>
+                                    <li>Select "Link with phone number instead"</li>
+                                    <li>Enter the code above</li>
+                                </ol>
+                                <p>The pairing code expires in ${data.data.expiresIn} seconds.</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    result.className = 'result error';
+                    result.style.display = 'block';
+                    resultContent.innerHTML = `
+                        <h3>❌ Error</h3>
+                        <p>${data.message}</p>
+                    `;
+                }
+            } catch (error) {
+                result.className = 'result error';
+                result.style.display = 'block';
+                resultContent.innerHTML = `
+                    <h3>❌ Connection Error</h3>
+                    <p>Failed to connect to the server. Please try again.</p>
+                `;
+            } finally {
+                // Reset button state
+                button.disabled = false;
+                btnText.style.display = 'inline';
+                loading.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

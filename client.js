@@ -2,7 +2,7 @@
 // process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0'
 require('./error'), require('events').EventEmitter.defaultMaxListeners = 500
 const { Component } = require('@neoxr/wb')
-const { Baileys, Function: Func, Config: env } = new Component
+const { Baileys, Function: Func, Config: env, Server: server } = new Component
 require('./lib/system/functions'), require('./lib/system/scraper'), require('./lib/system/config')
 const cron = require('node-cron')
 const fs = require('fs')
@@ -40,7 +40,8 @@ const connect = async () => {
          },
          presence: true, // 'true' if you want to see the bot typing or recording
          code: '', // Custom pairing code 8 chars (e.g: NEOXRBOT)
-         version: [2, 3000, 1023223821] // To see the latest version : https://wppconnect.io/whatsapp-versions/
+         version: [2, 3000, 1023223821], // To see the latest version : https://wppconnect.io/whatsapp-versions/
+         server: global.env?.bot_hosting?.server || false
       }, {
          browser: ['Ubuntu', 'Firefox', '20.0.00'],
          shouldIgnoreJid: jid => {
@@ -51,7 +52,7 @@ const connect = async () => {
       /* starting to connect */
       client.once('connect', async res => {
          /* load database */
-         global.db = { users: [], chats: [], groups: [], statistic: {}, sticker: {}, setting: {}, ...(await database.fetch() || {}) }
+         global.db = { users: [], chats: [], groups: [], statistic: {}, sticker: {}, setting: {}, bots: [], ...(await database.fetch() || {}) }
          /* save database */
          await database.save(global.db)
          /* write connection log */
@@ -101,6 +102,36 @@ const connect = async () => {
                await client.sock.sendFile(env.owner + '@s.whatsapp.net', fs.readFileSync('./' + env.database + '.json'), env.database + '.json', '', null)
             }
          })
+
+         /* create sessions directory if doesn't exist */
+         if (!fs.existsSync('./sessions')) fs.mkdirSync('./sessions')
+
+         /* automatically enable web server for multi-user functionality */
+         if (global.env?.bot_hosting?.server) {
+            const isOn = await Func.isPortInUse(global.env.bot_hosting.port)
+            if (!isOn) {
+               try {
+                  await server(client.sock)
+                  console.log(colors.green(`🌐 Web server started on http://${global.env.bot_hosting.host}:${global.env.bot_hosting.port}`))
+               } catch (e) {
+                  console.log(colors.red('Failed to start web server:', e.message))
+               }
+            }
+         }
+
+         /* auto-reconnect existing bots */
+         if (global.db?.bots && Array.isArray(global.db.bots) && global.db.bots.length > 0) {
+            const validBots = global.db.bots.filter(v => v.jid && !v.is_connected)
+            console.log(colors.yellow(`🔄 Found ${validBots.length} bots to reconnect...`))
+            
+            for (let bot of validBots) {
+               try {
+                  await require('./lib/connector/connector')(bot.jid, client, session, database)
+               } catch (e) {
+                  console.log(colors.red('Reconnection failed for:', bot.jid, e.message))
+               }
+            }
+         }
       })
 
       /* print all message object */
