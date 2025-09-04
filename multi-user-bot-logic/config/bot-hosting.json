@@ -1,0 +1,39 @@
+{
+  "bot_hosting": {
+    "server": true,
+    "host": "0.0.0.0",
+    "port": 3001,
+    "session_dir": "sessions",
+    "slot": 10,
+    "bacth": 50,
+    "delay": 1500,
+    "interval": 2500
+  },
+  "pairing": {
+    "number": "6285157336614",
+    "code": "",
+    "version": [2, 2413, 1],
+    "browser": ["Ubuntu", "Chrome", "20.0.04"]
+  },
+  "database": {
+    "name": "database",
+    "auto_save": true,
+    "save_interval": 60000,
+    "backup": {
+      "enabled": true,
+      "schedule": "0 12 * * *",
+      "retention_days": 30
+    }
+  },
+  "limits": {
+    "user_limit": 50,
+    "game_limit": 25,
+    "premium_limit": 1000
+  },
+  "cooldown": 3,
+  "timeout": 60000,
+  "ram_limit": "2gb",
+  "permanent_threshold": 10,
+  "notify_threshold": 5,
+  "banned_threshold": 3
+}
