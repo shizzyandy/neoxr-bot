@@ -19,6 +19,15 @@ module.exports = async (client, ctx) => {
       let users = global.db.users.find(v => v.jid === m.sender)
       let setting = global.db.setting
       let isOwner = [client.decodeJid(client.user.id).replace(/@.+/, ''), env.owner, ...setting.owners].map(v => v + '@s.whatsapp.net').includes(m.sender)
+      
+      // Multi-user bot support: Check if sender is owner of current bot instance
+      const currentBotId = client.decodeJid(client.user.id).replace(/@.+/, '')
+      const isSubBotOwner = global.db.bots && global.db.bots.some(v => v.jid === currentBotId && (v.sender === m.sender.replace(/@.+/, '') || v.jid === m.sender.replace(/@.+/, '')))
+      
+      // For sub-bots, only the bot owner and main owner should have owner privileges
+      if (currentBotId !== env.pairing.number.toString()) {
+         isOwner = isOwner || isSubBotOwner
+      }
       let isPrem = users && users.premium || isOwner
       let groupMetadata = m.isGroup ? await client.getGroupMetadata(m.chat) : {}
       let participants = m.isGroup ? groupMetadata ? client.lidParser(groupMetadata.participants) : [] : [] || []
@@ -37,6 +46,17 @@ module.exports = async (client, ctx) => {
 
       // exception disabled plugin
       var plugins = Object.fromEntries(Object.entries(plugins).filter(([name, _]) => !setting.pluginDisable.includes(name)))
+
+      // Group isolation for multi-user bots
+      if (m.isGroup && currentBotId !== env.pairing.number.toString()) {
+         // Sub-bots should only respond in groups where they are specifically added by their owner
+         // Skip processing if this is a sub-bot and the message is from a group it shouldn't respond to
+         const botData = global.db.bots.find(v => v.jid === currentBotId)
+         if (botData && !isSubBotOwner && !isOwner) {
+            // For sub-bots, only respond to their owner or in groups where explicitly allowed
+            return
+         }
+      }
 
       if (!setting.online) client.sendPresenceUpdate('unavailable', m.chat)
       if (setting.online) {
