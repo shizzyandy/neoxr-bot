@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SubBot Manager - Create Your WhatsApp Bot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .method-selection {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .method-option {
+            padding: 1rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .method-option:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .method-option.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .method-option h3 {
+            margin-bottom: 0.5rem;
+        }
+
+        .method-option p {
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-section {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: #f8f9ff;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+        }
+
+        .qr-code {
+            max-width: 200px;
+            margin: 1rem auto;
+        }
+
+        .pair-code {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin: 1rem 0;
+            letter-spacing: 0.2rem;
+        }
+
+        .instructions {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .status {
+            margin-top: 1rem;
+            padding: 0.5rem;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .bot-list {
+            margin-top: 2rem;
+        }
+
+        .bot-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .bot-info h4 {
+            margin-bottom: 0.25rem;
+            color: #333;
+        }
+
+        .bot-info p {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .bot-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .bot-status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .bot-status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 SubBot Manager</h1>
+            <p>Create your personal WhatsApp bot instance</p>
+        </div>
+
+        <form id="botForm">
+            <div class="form-group">
+                <label for="phoneNumber">WhatsApp Phone Number</label>
+                <input type="tel" id="phoneNumber" placeholder="e.g., 6281234567890" required>
+            </div>
+
+            <div class="form-group">
+                <label for="botName">Bot Name</label>
+                <input type="text" id="botName" placeholder="e.g., My Personal Bot" required>
+            </div>
+
+            <div class="form-group">
+                <label>Connection Method</label>
+                <div class="method-selection">
+                    <div class="method-option" data-method="qr">
+                        <h3>📱 QR Code</h3>
+                        <p>Scan with your phone</p>
+                    </div>
+                    <div class="method-option" data-method="pair">
+                        <h3>🔢 Pairing Code</h3>
+                        <p>Enter 6-digit code</p>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn" id="createBtn">Create Bot</button>
+        </form>
+
+        <div id="resultSection" class="result-section">
+            <div id="qrSection" style="display: none;">
+                <h3>Scan QR Code</h3>
+                <img id="qrCode" class="qr-code" alt="QR Code">
+                <div class="instructions">
+                    <p>1. Open WhatsApp on your phone</p>
+                    <p>2. Go to Settings → Linked Devices</p>
+                    <p>3. Tap "Link a Device"</p>
+                    <p>4. Scan the QR code above</p>
+                </div>
+            </div>
+
+            <div id="pairSection" style="display: none;">
+                <h3>Enter Pairing Code</h3>
+                <div id="pairCode" class="pair-code"></div>
+                <div class="instructions">
+                    <p>1. Open WhatsApp on your phone</p>
+                    <p>2. Go to Settings → Linked Devices</p>
+                    <p>3. Tap "Link with phone number instead"</p>
+                    <p>4. Enter the code above</p>
+                </div>
+            </div>
+
+            <div id="statusDiv" class="status"></div>
+        </div>
+
+        <div class="bot-list">
+            <h3>Your Bots</h3>
+            <div id="botListContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        class SubBotManager {
+            constructor() {
+                this.selectedMethod = null
+                this.sessionId = null
+                this.init()
+            }
+
+            init() {
+                this.bindEvents()
+                this.loadBotList()
+            }
+
+            bindEvents() {
+                // Method selection
+                document.querySelectorAll('.method-option').forEach(option => {
+                    option.addEventListener('click', (e) => {
+                        document.querySelectorAll('.method-option').forEach(opt => 
+                            opt.classList.remove('selected'))
+                        e.currentTarget.classList.add('selected')
+                        this.selectedMethod = e.currentTarget.dataset.method
+                    })
+                })
+
+                // Form submission
+                document.getElementById('botForm').addEventListener('submit', (e) => {
+                    e.preventDefault()
+                    this.createBot()
+                })
+            }
+
+            async createBot() {
+                const phoneNumber = document.getElementById('phoneNumber').value
+                const botName = document.getElementById('botName').value
+                
+                if (!this.selectedMethod) {
+                    this.showStatus('Please select a connection method', 'error')
+                    return
+                }
+
+                const createBtn = document.getElementById('createBtn')
+                createBtn.disabled = true
+                createBtn.textContent = 'Creating Bot...'
+
+                try {
+                    const response = await fetch('/api/subbot/connect', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            phoneNumber,
+                            botName,
+                            method: this.selectedMethod
+                        })
+                    })
+
+                    const data = await response.json()
+
+                    if (data.status) {
+                        this.sessionId = data.data.sessionId
+                        this.showConnectionResult(data.data)
+                        this.startStatusCheck()
+                    } else {
+                        this.showStatus(data.message, 'error')
+                    }
+                } catch (error) {
+                    this.showStatus('Failed to create bot: ' + error.message, 'error')
+                } finally {
+                    createBtn.disabled = false
+                    createBtn.textContent = 'Create Bot'
+                }
+            }
+
+            showConnectionResult(data) {
+                const resultSection = document.getElementById('resultSection')
+                const qrSection = document.getElementById('qrSection')
+                const pairSection = document.getElementById('pairSection')
+
+                resultSection.style.display = 'block'
+
+                if (data.qrCode) {
+                    document.getElementById('qrCode').src = data.qrCode
+                    qrSection.style.display = 'block'
+                    pairSection.style.display = 'none'
+                } else if (data.pairCode) {
+                    document.getElementById('pairCode').textContent = data.pairCode
+                    pairSection.style.display = 'block'
+                    qrSection.style.display = 'none'
+                }
+
+                this.showStatus(data.message, 'success')
+            }
+
+            async startStatusCheck() {
+                const checkStatus = async () => {
+                    try {
+                        const response = await fetch(`/api/subbot/status?sessionId=${this.sessionId}`)
+                        const data = await response.json()
+
+                        if (data.status && data.data.connected) {
+                            this.showStatus('✅ Bot connected successfully!', 'success')
+                            this.loadBotList()
+                            return true
+                        }
+                    } catch (error) {
+                        console.error('Status check failed:', error)
+                    }
+                    return false
+                }
+
+                // Check every 3 seconds for 2 minutes
+                let attempts = 0
+                const maxAttempts = 40
+                
+                const interval = setInterval(async () => {
+                    attempts++
+                    const connected = await checkStatus()
+                    
+                    if (connected || attempts >= maxAttempts) {
+                        clearInterval(interval)
+                        if (!connected) {
+                            this.showStatus('Connection timeout. Please try again.', 'error')
+                        }
+                    }
+                }, 3000)
+            }
+
+            async loadBotList() {
+                try {
+                    const response = await fetch('/api/subbot/status?action=list')
+                    const data = await response.json()
+
+                    if (data.status) {
+                        this.renderBotList(data.data)
+                    }
+                } catch (error) {
+                    console.error('Failed to load bot list:', error)
+                }
+            }
+
+            renderBotList(bots) {
+                const container = document.getElementById('botListContainer')
+                
+                if (bots.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: #666;">No bots created yet</p>'
+                    return
+                }
+
+                container.innerHTML = bots.map(bot => `
+                    <div class="bot-item">
+                        <div class="bot-info">
+                            <h4>${bot.name}</h4>
+                            <p>+${bot.jid} • Last: ${new Date(bot.lastConnect).toLocaleString()}</p>
+                        </div>
+                        <div class="bot-status ${bot.isConnected ? 'connected' : 'disconnected'}">
+                            ${bot.isConnected ? 'Connected' : 'Disconnected'}
+                        </div>
+                    </div>
+                `).join('')
+            }
+
+            showStatus(message, type) {
+                const statusDiv = document.getElementById('statusDiv')
+                statusDiv.textContent = message
+                statusDiv.className = `status ${type}`
+                statusDiv.style.display = 'block'
+            }
+        }
+
+        // Initialize the manager when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new SubBotManager()
+        })
+    </script>
+</body>
+</html>
